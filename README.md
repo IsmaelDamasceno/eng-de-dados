@@ -6,7 +6,7 @@
 [![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://jlsilva01.github.io/projeto-ed-satc/)  
 
 
-Repositorio modelo para desenvolvimento do projeto final da disciplina de Engenharia de Dados do curso de Engenharia de Software da UNISATC.
+Repositorio modelo para desenvolvimento de projetos da disciplina de Engenharia de Dados do curso de Engenharia de Software da UNISATC.
 
 ## Desenho de Arquitetura
 
