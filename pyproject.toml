@@ -1,29 +1,27 @@
-[tool.poetry]
+[project]
 name = "projeto-ed-satc"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
-readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyspark>=3.5.0",
+    "delta-spark>=3.2.0",
+    "pyiceberg[pyarrow,pandas]>=0.7.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-
-
-[tool.poetry.group.dev.dependencies]
-isort = "^5.13.2"
-blue = "^0.9.1"
-
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6.0"
-mkdocs-material = "^9.5.23"
-pymdown-extensions = "^10.8.1"
-mkdocstrings = "^0.25.1"
-
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.2.0"
+[dependency-groups]
+dev = [
+    "isort>=5.13.2",
+    "blue>=0.9.1",
+    "pytest>=8.2.0",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.23",
+    "pymdown-extensions>=10.8.1",
+    "mkdocstrings>=0.25.1",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
