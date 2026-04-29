@@ -1,0 +1,1636 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Pipeline de dados de RH com Apache Spark, Delta Lake e Apache Iceberg">
+      
+      
+        <meta name="author" content="Ismael Damasceno Tristão">
+      
+      
+        <link rel="canonical" href="https://ismasel.github.io/eng-de-dados/iceberg/">
+      
+      
+        <link rel="prev" href="../delta/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Apache Iceberg - Engenharia de Dados SATC — TechCorp RH</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#apache-iceberg" class="md-skip">
+          Ir para o conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href=".." title="Engenharia de Dados SATC — TechCorp RH" class="md-header__button md-logo" aria-label="Engenharia de Dados SATC — TechCorp RH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Engenharia de Dados SATC — TechCorp RH
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Apache Iceberg
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Modo escuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Modo escuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando a pesquisa
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ismasel/eng-de-dados" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    eng-de-dados
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contextualização
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../spark/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Apache Spark
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../delta/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Delta Lake
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Apache Iceberg
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Engenharia de Dados SATC — TechCorp RH" class="md-nav__button md-logo" aria-label="Engenharia de Dados SATC — TechCorp RH" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Engenharia de Dados SATC — TechCorp RH
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ismasel/eng-de-dados" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    eng-de-dados
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contextualização
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Apache Spark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../delta/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delta Lake
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Apache Iceberg
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Apache Iceberg
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-e-apache-iceberg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que é Apache Iceberg?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-de-metadados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitetura de Metadados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuracao-da-sparksession" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuração da SparkSession
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespaces-databases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespaces (Databases)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ddl-criacao-de-tabelas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DDL — Criação de Tabelas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DDL — Criação de Tabelas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tabela-de-funcionarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabela de Funcionários
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabela-de-folha-de-pagamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabela de Folha de Pagamento
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#insert-insercao-de-dados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INSERT — Inserção de Dados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INSERT — Inserção de Dados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#carga-inicial-via-writetoappend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Carga Inicial via writeTo().append()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#insercao-via-sql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inserção via SQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resultado-apos-insert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultado após INSERT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-atualizacao-de-registros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UPDATE — Atualização de Registros
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UPDATE — Atualização de Registros">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reajuste-salarial-por-cargo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reajuste Salarial por Cargo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mudanca-de-status-em-massa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mudança de Status em Massa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delete-remocao-de-registros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE — Remoção de Registros
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DELETE — Remoção de Registros">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remocao-por-predicado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remoção por Predicado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-com-filtro-de-data-e-origem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE com Filtro de Data e Origem
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-into-upsert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE INTO — UPSERT
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-travel-e-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time Travel e Snapshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Time Travel e Snapshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#listando-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listando Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lendo-um-snapshot-especifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lendo um Snapshot Específico
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-evolution-evolucao-de-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Evolution — Evolução de Schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-e-apache-iceberg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que é Apache Iceberg?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-de-metadados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitetura de Metadados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuracao-da-sparksession" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuração da SparkSession
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespaces-databases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespaces (Databases)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ddl-criacao-de-tabelas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DDL — Criação de Tabelas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DDL — Criação de Tabelas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tabela-de-funcionarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabela de Funcionários
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabela-de-folha-de-pagamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabela de Folha de Pagamento
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#insert-insercao-de-dados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INSERT — Inserção de Dados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INSERT — Inserção de Dados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#carga-inicial-via-writetoappend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Carga Inicial via writeTo().append()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#insercao-via-sql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inserção via SQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resultado-apos-insert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultado após INSERT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-atualizacao-de-registros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UPDATE — Atualização de Registros
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UPDATE — Atualização de Registros">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reajuste-salarial-por-cargo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reajuste Salarial por Cargo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mudanca-de-status-em-massa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mudança de Status em Massa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#delete-remocao-de-registros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE — Remoção de Registros
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DELETE — Remoção de Registros">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remocao-por-predicado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remoção por Predicado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-com-filtro-de-data-e-origem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DELETE com Filtro de Data e Origem
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#merge-into-upsert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MERGE INTO — UPSERT
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-travel-e-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time Travel e Snapshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Time Travel e Snapshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#listando-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listando Snapshots
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lendo-um-snapshot-especifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lendo um Snapshot Específico
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-evolution-evolucao-de-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Evolution — Evolução de Schema
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="apache-iceberg">Apache Iceberg</h1>
+<h2 id="o-que-e-apache-iceberg">O que é Apache Iceberg?</h2>
+<p><strong>Apache Iceberg</strong> é um formato de tabela open-source de alto desempenho para data lakes analíticos, originalmente desenvolvido pela Netflix e doado à Apache Software Foundation em 2018. Iceberg resolve os problemas clássicos de tabelas Hive — como leituras inconsistentes durante escritas, particionamento problemático e falta de suporte a operações DML — através de uma camada de metadados rica e imutável.</p>
+<div class="admonition info">
+<p class="admonition-title">Versão utilizada neste projeto</p>
+<p><strong>Iceberg Spark Runtime 1.5.0</strong> para Spark 3.5 com Scala 2.12, usando <strong>HadoopCatalog</strong> com warehouse local em <code>/tmp/iceberg/warehouse</code>.</p>
+</div>
+<hr />
+<h2 id="arquitetura-de-metadados">Arquitetura de Metadados</h2>
+<p>A diferença fundamental do Iceberg em relação ao Parquet simples ou Hive é a sua <strong>camada de metadados em três níveis</strong>:</p>
+<pre class="mermaid"><code>flowchart TB
+    subgraph Catálogo["Catálogo (HadoopCatalog)"]
+        P[Ponteiro para\nmetadata atual]
+    end
+    subgraph Metadados["Nível de Metadados"]
+        M[metadata.json\nSnapshot atual + histórico]
+        ML[Manifest List\n.avro — lista de manifests]
+        MF[Manifest File\n.avro — lista de data files]
+    end
+    subgraph Dados["Nível de Dados"]
+        DF1[data-file-1.parquet]
+        DF2[data-file-2.parquet]
+        DF3[data-file-3.parquet]
+    end
+
+    P --&gt; M
+    M --&gt; ML
+    ML --&gt; MF
+    MF --&gt; DF1
+    MF --&gt; DF2
+    MF --&gt; DF3</code></pre>
+<table>
+<thead>
+<tr>
+<th>Nível</th>
+<th>Arquivo</th>
+<th>Conteúdo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Metadata</strong></td>
+<td><code>metadata.json</code></td>
+<td>Schema, particionamento, histórico de snapshots</td>
+</tr>
+<tr>
+<td><strong>Manifest List</strong></td>
+<td><code>snap-*.avro</code></td>
+<td>Lista dos manifest files de um snapshot</td>
+</tr>
+<tr>
+<td><strong>Manifest File</strong></td>
+<td><code>*.avro</code></td>
+<td>Lista dos data files com estatísticas de coluna</td>
+</tr>
+<tr>
+<td><strong>Data Files</strong></td>
+<td><code>*.parquet</code></td>
+<td>Dados reais em formato Parquet</td>
+</tr>
+</tbody>
+</table>
+<p>Cada operação (INSERT, UPDATE, DELETE, MERGE) gera um novo <strong>snapshot</strong> — uma visão atômica e imutável da tabela — sem modificar os snapshots anteriores. Isso garante isolamento de leituras e permite time travel.</p>
+<hr />
+<h2 id="configuracao-da-sparksession">Configuração da SparkSession</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparkSession</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">to_date</span><span class="p">,</span> <span class="n">current_timestamp</span><span class="p">,</span> <span class="n">lit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">DoubleType</span>
+
+<span class="n">ICEBERG_WAREHOUSE</span> <span class="o">=</span> <span class="s1">&#39;/tmp/iceberg/warehouse&#39;</span>
+<span class="n">DATA_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;../raw&#39;</span><span class="p">)</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span>
+    <span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s1">&#39;Pipeline_RH_Iceberg&#39;</span><span class="p">)</span>
+    <span class="c1"># Extensão SQL: habilita UPDATE, DELETE, MERGE INTO, CALL, etc.</span>
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s1">&#39;spark.sql.extensions&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions&#39;</span><span class="p">)</span>
+    <span class="c1"># Catálogo nomeado &#39;local&#39; — HadoopCatalog usa o sistema de arquivos diretamente</span>
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s1">&#39;spark.sql.catalog.local&#39;</span><span class="p">,</span> <span class="s1">&#39;org.apache.iceberg.spark.SparkCatalog&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s1">&#39;spark.sql.catalog.local.type&#39;</span><span class="p">,</span> <span class="s1">&#39;hadoop&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s1">&#39;spark.sql.catalog.local.warehouse&#39;</span><span class="p">,</span> <span class="n">ICEBERG_WAREHOUSE</span><span class="p">)</span>
+    <span class="c1"># Runtime baixado via Maven na inicialização do Spark</span>
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s1">&#39;spark.jars.packages&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span><span class="o">.</span><span class="n">setLogLevel</span><span class="p">(</span><span class="s1">&#39;WARN&#39;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="namespaces-databases">Namespaces (Databases)</h2>
+<p>No Iceberg, as tabelas são organizadas em <strong>namespaces</strong> — equivalentes a schemas ou databases. No projeto, usamos o namespace <code>rh</code> dentro do catálogo <code>local</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Cria o namespace &#39;rh&#39;</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;CREATE NAMESPACE IF NOT EXISTS local.rh&#39;</span><span class="p">)</span>
+
+<span class="c1"># Lista namespaces disponíveis</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;SHOW NAMESPACES IN local&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>+---------+
+|namespace|
++---------+
+|       rh|
++---------+
+</code></pre></div>
+<p>A convenção de endereçamento é <code>&lt;catálogo&gt;.&lt;namespace&gt;.&lt;tabela&gt;</code> — por exemplo: <code>local.rh.funcionarios</code>.</p>
+<hr />
+<h2 id="ddl-criacao-de-tabelas">DDL — Criação de Tabelas</h2>
+<p>O Iceberg exige (e recomenda) <strong>schema explícito</strong> via DDL, ao contrário do Delta onde é comum inferir a partir do DataFrame. Isso garante controle preciso sobre tipos e particionamento.</p>
+<h3 id="tabela-de-funcionarios">Tabela de Funcionários</h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="k">local</span><span class="p">.</span><span class="n">rh</span><span class="p">.</span><span class="n">funcionarios</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">funcionario_id</span><span class="w">  </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">nome</span><span class="w">            </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">email</span><span class="w">           </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">cpf</span><span class="w">             </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_nascimento</span><span class="w"> </span><span class="nb">DATE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_admissao</span><span class="w">   </span><span class="nb">DATE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">departamento_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">cargo_id</span><span class="w">        </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salario</span><span class="w">         </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">status</span><span class="w">          </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pipeline_ts</span><span class="w">     </span><span class="k">TIMESTAMP</span><span class="p">,</span>
+<span class="w">    </span><span class="k">source</span><span class="w">          </span><span class="n">STRING</span>
+<span class="p">)</span>
+<span class="k">USING</span><span class="w"> </span><span class="n">iceberg</span>
+<span class="n">PARTITIONED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="tabela-de-folha-de-pagamento">Tabela de Folha de Pagamento</h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="k">local</span><span class="p">.</span><span class="n">rh</span><span class="p">.</span><span class="n">folha_pagamento</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">folha_id</span><span class="w">             </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">funcionario_id</span><span class="w">       </span><span class="nb">INT</span><span class="p">,</span>
+<span class="w">    </span><span class="n">competencia</span><span class="w">          </span><span class="n">STRING</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salario_bruto</span><span class="w">        </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">desconto_inss</span><span class="w">        </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">desconto_irrf</span><span class="w">        </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">desconto_plano_saude</span><span class="w"> </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">bonus</span><span class="w">                </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">salario_liquido</span><span class="w">      </span><span class="n">DOUBLE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">data_pagamento</span><span class="w">       </span><span class="nb">DATE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">pipeline_ts</span><span class="w">          </span><span class="k">TIMESTAMP</span><span class="p">,</span>
+<span class="w">    </span><span class="k">source</span><span class="w">               </span><span class="n">STRING</span>
+<span class="p">)</span>
+<span class="k">USING</span><span class="w"> </span><span class="n">iceberg</span>
+<span class="n">PARTITIONED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="p">(</span><span class="n">competencia</span><span class="p">);</span>
+</code></pre></div>
+<hr />
+<h2 id="insert-insercao-de-dados">INSERT — Inserção de Dados</h2>
+<h3 id="carga-inicial-via-writetoappend">Carga Inicial via <code>writeTo().append()</code></h3>
+<p>O Iceberg usa a API <code>writeTo()</code> para gravar DataFrames diretamente em tabelas do catálogo:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Transformação: tipagem correta + metadados de pipeline</span>
+<span class="n">df_func_clean</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">df_funcionarios</span>
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;data_nascimento&#39;</span><span class="p">,</span> <span class="n">to_date</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;data_nascimento&#39;</span><span class="p">),</span> <span class="s1">&#39;yyyy-MM-dd&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;data_admissao&#39;</span><span class="p">,</span>   <span class="n">to_date</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;data_admissao&#39;</span><span class="p">),</span>   <span class="s1">&#39;yyyy-MM-dd&#39;</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;salario&#39;</span><span class="p">,</span>         <span class="n">col</span><span class="p">(</span><span class="s1">&#39;salario&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">DoubleType</span><span class="p">()))</span>
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;pipeline_ts&#39;</span><span class="p">,</span>     <span class="n">current_timestamp</span><span class="p">())</span>
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>          <span class="n">lit</span><span class="p">(</span><span class="s1">&#39;CSV_LEGADO&#39;</span><span class="p">))</span>
+<span class="p">)</span>
+
+<span class="c1"># Seleciona apenas as colunas definidas no DDL — mesma ordem não é obrigatória</span>
+<span class="n">df_func_clean</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+    <span class="s1">&#39;funcionario_id&#39;</span><span class="p">,</span> <span class="s1">&#39;nome&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;cpf&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;data_nascimento&#39;</span><span class="p">,</span> <span class="s1">&#39;data_admissao&#39;</span><span class="p">,</span> <span class="s1">&#39;departamento_id&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cargo_id&#39;</span><span class="p">,</span> <span class="s1">&#39;salario&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;pipeline_ts&#39;</span><span class="p">,</span> <span class="s1">&#39;source&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">writeTo</span><span class="p">(</span><span class="s1">&#39;local.rh.funcionarios&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Total: </span><span class="si">{</span><span class="n">spark</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;local.rh.funcionarios&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="si">}</span><span class="s1"> registros&#39;</span><span class="p">)</span>
+<span class="c1"># Total: 15 registros</span>
+</code></pre></div>
+<h3 id="insercao-via-sql">Inserção via SQL</h3>
+<p>O Iceberg suporta <code>INSERT INTO</code> com valores literais, exatamente como SQL padrão:</p>
+<div class="highlight"><pre><span></span><code><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    INSERT INTO local.rh.funcionarios VALUES</span>
+<span class="s2">    (16, &#39;Renata Gomes&#39;, &#39;renata.gomes@techcorp.com&#39;, &#39;666.777.888-99&#39;,</span>
+<span class="s2">     DATE &#39;1998-04-12&#39;, DATE &#39;2024-03-01&#39;, 1, 1, 5000.0, &#39;ATIVO&#39;,</span>
+<span class="s2">     current_timestamp(), &#39;SISTEMA_RH_2024&#39;),</span>
+<span class="s2">    (17, &#39;Gustavo Prado&#39;, &#39;gustavo.prado@techcorp.com&#39;, &#39;777.888.999-00&#39;,</span>
+<span class="s2">     DATE &#39;1990-09-27&#39;, DATE &#39;2024-03-15&#39;, 3, 4, 10500.0, &#39;ATIVO&#39;,</span>
+<span class="s2">     current_timestamp(), &#39;SISTEMA_RH_2024&#39;)</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">total</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;SELECT COUNT(*) AS total FROM local.rh.funcionarios&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;total&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;✅ Total após INSERT SQL: </span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="c1"># ✅ Total após INSERT SQL: 17</span>
+</code></pre></div>
+<h3 id="resultado-apos-insert">Resultado após INSERT</h3>
+<div class="highlight"><pre><span></span><code><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT funcionario_id, nome, cargo_id, salario, status</span>
+<span class="s2">    FROM local.rh.funcionarios</span>
+<span class="s2">    ORDER BY funcionario_id</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>+--------------+--------------------+--------+-------+------+
+|funcionario_id|                nome|cargo_id|salario|status|
++--------------+--------------------+--------+-------+------+
+|             1|     Ana Paula Silva|       3| 8500.0| ATIVO|
+|             2|Carlos Eduardo Me...|       5|12000.0| ATIVO|
+...
+|            16|        Renata Gomes|       1| 5000.0| ATIVO|
+|            17|       Gustavo Prado|       4|10500.0| ATIVO|
++--------------+--------------------+--------+-------+------+
+</code></pre></div>
+<hr />
+<h2 id="update-atualizacao-de-registros">UPDATE — Atualização de Registros</h2>
+<p>O Iceberg suporta <code>UPDATE</code> direto via SQL desde a versão 0.14 com Spark 3.x. Não há API Python equivalente à <code>DeltaTable.update()</code> — tudo passa pelo SQL.</p>
+<h3 id="reajuste-salarial-por-cargo">Reajuste Salarial por Cargo</h3>
+<div class="highlight"><pre><span></span><code><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    UPDATE local.rh.funcionarios</span>
+<span class="s2">    SET salario     = salario * 1.12,</span>
+<span class="s2">        pipeline_ts = current_timestamp()</span>
+<span class="s2">    WHERE cargo_id = 2</span>
+<span class="s2">    AND   status   = &#39;ATIVO&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;✅ Analistas Plenos: reajuste de 12%&#39;</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT nome, cargo_id, salario, status</span>
+<span class="s2">    FROM local.rh.funcionarios</span>
+<span class="s2">    WHERE cargo_id = 2</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>+--------------+--------+-----------------+------+
+|          nome|cargo_id|          salario|status|
++--------------+--------+-----------------+------+
+|Fernanda Costa|       2|6944.000000000001| ATIVO|
+|  Camila Souza|       2|7280.000000000001| ATIVO|
++--------------+--------+-----------------+------+
+</code></pre></div>
+<h3 id="mudanca-de-status-em-massa">Mudança de Status em Massa</h3>
+<div class="highlight"><pre><span></span><code><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    UPDATE local.rh.funcionarios</span>
+<span class="s2">    SET status      = &#39;DESLIGADO&#39;,</span>
+<span class="s2">        pipeline_ts = current_timestamp()</span>
+<span class="s2">    WHERE status = &#39;INATIVO&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;✅ Funcionários INATIVO → DESLIGADO&#39;</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT nome, status</span>
+<span class="s2">    FROM local.rh.funcionarios</span>
+<span class="s2">    WHERE status = &#39;DESLIGADO&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>+----------------+---------+
+|            nome|   status|
++----------------+---------+
+|Marcos Rodrigues|DESLIGADO|
+|   Felipe Santos|DESLIGADO|
++----------------+---------+
+</code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Como o UPDATE funciona no Iceberg</p>
+<p>Assim como no Delta, o Iceberg <strong>nunca modifica arquivos existentes</strong>. Um <code>UPDATE</code> cria novos arquivos Parquet com as linhas modificadas e registra um novo <strong>snapshot</strong> nos metadados. Os arquivos antigos continuam existindo e são acessíveis via Time Travel.</p>
+</div>
+<hr />
+<h2 id="delete-remocao-de-registros">DELETE — Remoção de Registros</h2>
+<h3 id="remocao-por-predicado">Remoção por Predicado</h3>
+<div class="highlight"><pre><span></span><code><span class="n">antes</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;SELECT COUNT(*) AS n FROM local.rh.funcionarios&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;n&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Registros antes do DELETE: </span><span class="si">{</span><span class="n">antes</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># 17</span>
+
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    DELETE FROM local.rh.funcionarios</span>
+<span class="s2">    WHERE status = &#39;DESLIGADO&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">depois</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;SELECT COUNT(*) AS n FROM local.rh.funcionarios&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;n&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Registros após o DELETE:   </span><span class="si">{</span><span class="n">depois</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># 15</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">antes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">depois</span><span class="si">}</span><span class="s1"> registro(s) removido(s)!&#39;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="delete-com-filtro-de-data-e-origem">DELETE com Filtro de Data e Origem</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Remove registros de folha de competências antigas da fonte legada</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    DELETE FROM local.rh.folha_pagamento</span>
+<span class="s2">    WHERE source         = &#39;CSV_LEGADO&#39;</span>
+<span class="s2">    AND   data_pagamento  &lt; DATE &#39;2024-01-01&#39;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;✅ Folhas legadas anteriores a 2024 removidas&#39;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="merge-into-upsert">MERGE INTO — UPSERT</h2>
+<p><code>MERGE INTO</code> é a operação mais poderosa do Iceberg para pipelines incrementais. Em uma única instrução atômica, sincroniza dados entre uma fonte e a tabela destino.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">Row</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+
+<span class="c1"># Dados chegando de uma API de RH em tempo real</span>
+<span class="n">dados_novos</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Row</span><span class="p">(</span><span class="n">funcionario_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nome</span><span class="o">=</span><span class="s1">&#39;Ana Paula Silva&#39;</span><span class="p">,</span>   <span class="c1"># (1)</span>
+        <span class="n">email</span><span class="o">=</span><span class="s1">&#39;ana.paula@techcorp.com&#39;</span><span class="p">,</span> <span class="n">cpf</span><span class="o">=</span><span class="s1">&#39;123.456.789-01&#39;</span><span class="p">,</span>
+        <span class="n">data_nascimento</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">1990</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="n">data_admissao</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">departamento_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cargo_id</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">salario</span><span class="o">=</span><span class="mf">9500.0</span><span class="p">,</span>
+        <span class="n">status</span><span class="o">=</span><span class="s1">&#39;ATIVO&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;API_RH&#39;</span><span class="p">),</span>
+    <span class="n">Row</span><span class="p">(</span><span class="n">funcionario_id</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">nome</span><span class="o">=</span><span class="s1">&#39;Sofia Barros&#39;</span><span class="p">,</span>     <span class="c1"># (2)</span>
+        <span class="n">email</span><span class="o">=</span><span class="s1">&#39;sofia.barros@techcorp.com&#39;</span><span class="p">,</span> <span class="n">cpf</span><span class="o">=</span><span class="s1">&#39;888.999.000-11&#39;</span><span class="p">,</span>
+        <span class="n">data_nascimento</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">18</span><span class="p">),</span> <span class="n">data_admissao</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">departamento_id</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cargo_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">salario</span><span class="o">=</span><span class="mf">4800.0</span><span class="p">,</span>
+        <span class="n">status</span><span class="o">=</span><span class="s1">&#39;ATIVO&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;API_RH&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Cria o DataFrame sem pipeline_ts (será adicionado com withColumn)</span>
+<span class="n">df_novos</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">dados_novos</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;pipeline_ts&#39;</span><span class="p">,</span> <span class="n">current_timestamp</span><span class="p">())</span>
+<span class="p">)</span>
+
+<span class="c1"># Registra como view temporária para usar no SQL MERGE</span>
+<span class="n">df_novos</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="s1">&#39;source_rh&#39;</span><span class="p">)</span>
+
+<span class="c1"># MERGE INTO: sintaxe SQL padrão ANSI</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    MERGE INTO local.rh.funcionarios AS target</span>
+<span class="s2">    USING source_rh AS source</span>
+<span class="s2">    ON target.funcionario_id = source.funcionario_id</span>
+<span class="s2">    WHEN MATCHED THEN</span>
+<span class="s2">        UPDATE SET</span>
+<span class="s2">            target.salario     = source.salario,</span>
+<span class="s2">            target.email       = source.email,</span>
+<span class="s2">            target.pipeline_ts = source.pipeline_ts</span>
+<span class="s2">    WHEN NOT MATCHED THEN</span>
+<span class="s2">        INSERT *</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">total</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;SELECT COUNT(*) AS n FROM local.rh.funcionarios&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;n&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;✅ MERGE INTO executado! Total: </span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s1"> registros&#39;</span><span class="p">)</span>
+<span class="c1"># ✅ MERGE INTO executado! Total: 16 registros</span>
+</code></pre></div>
+<ol>
+<li>Funcionário <strong>existente</strong> (ID=1) — entra no <code>WHEN MATCHED → UPDATE SET</code>.</li>
+<li>Funcionário <strong>novo</strong> (ID=18, Sofia Barros) — entra no <code>WHEN NOT MATCHED → INSERT *</code>.</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Por que usar <code>createOrReplaceTempView</code>?</p>
+<p>O <code>MERGE INTO</code> via SQL precisa de uma fonte nomeada. Registrar o DataFrame como view temporária é a forma padrão de disponibilizá-lo para o SQL sem precisar gravá-lo como tabela permanente.</p>
+</div>
+<hr />
+<h2 id="time-travel-e-snapshots">Time Travel e Snapshots</h2>
+<p>O Iceberg mantém um histórico de snapshots. Cada operação de escrita (INSERT, UPDATE, DELETE, MERGE) cria um novo snapshot.</p>
+<h3 id="listando-snapshots">Listando Snapshots</h3>
+<div class="highlight"><pre><span></span><code><span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT snapshot_id, committed_at, operation, summary</span>
+<span class="s2">    FROM local.rh.funcionarios.snapshots</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">truncate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>+-------------------+-------------------------+---------+-------------------+
+|snapshot_id        |committed_at             |operation|summary            |
++-------------------+-------------------------+---------+-------------------+
+|7392171067964535351|2026-04-29 00:37:49.748  |append   |{added-records-&gt;15}|
+|8408425955796708354|2026-04-29 00:37:59.758  |append   |{added-records-&gt;2} |
+|1888994734977160663|2026-04-29 00:38:03.079  |overwrite|{added-records-&gt;13}|
+|7581888574623337620|2026-04-29 00:38:06.478  |overwrite|{added-records-&gt;2} |
+|3606185790123978746|2026-04-29 00:38:09.486  |delete   |{deleted-records-&gt;2}|
+|8606009116115671265|2026-04-29 00:43:58.547  |overwrite|{added-records-&gt;14}|
++-------------------+-------------------------+---------+-------------------+
+</code></pre></div>
+<h3 id="lendo-um-snapshot-especifico">Lendo um Snapshot Específico</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Coleta o snapshot_id do snapshot inicial</span>
+<span class="n">snapshots</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span>
+    <span class="s1">&#39;SELECT snapshot_id FROM local.rh.funcionarios.snapshots&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="n">primeiro_snapshot</span> <span class="o">=</span> <span class="n">snapshots</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;snapshot_id&#39;</span><span class="p">]</span>
+
+<span class="c1"># Lê os dados exatamente como estavam nesse snapshot</span>
+<span class="n">df_historico</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span> \
+    <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;snapshot-id&#39;</span><span class="p">,</span> <span class="n">primeiro_snapshot</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s1">&#39;local.rh.funcionarios&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Snapshot inicial: </span><span class="si">{</span><span class="n">df_historico</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="si">}</span><span class="s1"> registros&#39;</span><span class="p">)</span>
+<span class="n">df_historico</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;nome&#39;</span><span class="p">,</span> <span class="s1">&#39;salario&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>+--------------------+-------+-------+
+|                nome|salario| status|
++--------------------+-------+-------+
+|    Marcos Rodrigues| 9800.0|INATIVO|
+|       Felipe Santos| 9500.0|INATIVO|
+|     Ana Paula Silva| 8500.0|  ATIVO|
+|Carlos Eduardo Me...|12000.0|  ATIVO|
+|      Fernanda Costa| 6200.0|  ATIVO|
++--------------------+-------+-------+
+</code></pre></div>
+<hr />
+<h2 id="schema-evolution-evolucao-de-schema">Schema Evolution — Evolução de Schema</h2>
+<p>Um dos diferenciais do Iceberg é a capacidade de <strong>adicionar, renomear ou remover colunas sem reescrever os dados</strong>. Os arquivos existentes continuam sendo lidos corretamente — a coluna nova retorna <code>NULL</code> para registros antigos.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Adiciona coluna nova sem reescrever a tabela</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    ALTER TABLE local.rh.funcionarios</span>
+<span class="s2">    ADD COLUMN data_desligamento DATE</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;✅ Coluna adicionada!&#39;</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s1">&#39;DESCRIBE local.rh.funcionarios&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">truncate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>+-----------------------+---------+-------+
+|col_name               |data_type|comment|
++-----------------------+---------+-------+
+|funcionario_id         |int      |NULL   |
+|...                    |...      |NULL   |
+|data_desligamento      |date     |NULL   |  ← nova coluna
+|# Partition Information|         |       |
+|status                 |string   |NULL   |
++-----------------------+---------+-------+
+</code></pre></div>
+<p>Outras operações de evolução de schema suportadas:</p>
+<table>
+<thead>
+<tr>
+<th>Operação</th>
+<th>SQL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Renomear coluna</td>
+<td><code>ALTER TABLE ... RENAME COLUMN old TO new</code></td>
+</tr>
+<tr>
+<td>Remover coluna</td>
+<td><code>ALTER TABLE ... DROP COLUMN nome</code></td>
+</tr>
+<tr>
+<td>Alterar tipo</td>
+<td><code>ALTER TABLE ... ALTER COLUMN nome TYPE novo_tipo</code></td>
+</tr>
+<tr>
+<td>Adicionar comentário</td>
+<td><code>ALTER TABLE ... ALTER COLUMN nome COMMENT '...'</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Evolução de schema vs rewrite</p>
+<p><code>ADD COLUMN</code> e <code>RENAME COLUMN</code> são <strong>metadata-only</strong> — instantâneos, sem I/O de dados. Já <code>ALTER COLUMN ... TYPE</code> pode exigir reescrita se os tipos forem incompatíveis. Consulte a documentação do Iceberg para compatibilidade de tipos.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar ao topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Rodapé" >
+        
+          
+          <a href="../delta/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Delta Lake">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Delta Lake
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 — Ismael Damasceno Tristão — Todos os direitos reservados.
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/ismasel" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.path", "navigation.top", "navigation.next-prev", "content.code.copy", "content.code.annotate", "search.highlight", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
